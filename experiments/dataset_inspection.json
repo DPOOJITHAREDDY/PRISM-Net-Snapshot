@@ -1,0 +1,62 @@
+{
+  "train": {
+    "data_root": "C:\\Users\\Poojitha Reddy\\Downloads\\train\\train",
+    "num_noisy_files": 3200,
+    "num_gt_files": 3200,
+    "num_matched_pairs": 3200,
+    "missing_gt": [],
+    "missing_noisy": [],
+    "ignored_noisy_count": 0,
+    "ignored_gt_count": 0,
+    "noisy": {
+      "num_files": 3200,
+      "num_inspected": 3200,
+      "shape_distribution": {
+        "(128, 128)": 3200
+      },
+      "dtype_distribution": {
+        "float32": 3200
+      },
+      "min": -0.2785630524158478,
+      "max": 2.1580049991607666,
+      "corrupted_files": [],
+      "nan_files": [],
+      "inf_files": []
+    },
+    "gt": {
+      "num_files": 3200,
+      "num_inspected": 3200,
+      "shape_distribution": {
+        "(256, 256)": 3200
+      },
+      "dtype_distribution": {
+        "float32": 3200
+      },
+      "min": 0.0,
+      "max": 1.0,
+      "corrupted_files": [],
+      "nan_files": [],
+      "inf_files": []
+    }
+  },
+  "test": {
+    "test_dir": "C:\\Users\\Poojitha Reddy\\Downloads\\Test_NoisyLR",
+    "num_files": 400,
+    "ignored_count": 0,
+    "report": {
+      "num_files": 400,
+      "num_inspected": 400,
+      "shape_distribution": {
+        "(128, 128)": 400
+      },
+      "dtype_distribution": {
+        "float32": 400
+      },
+      "min": -0.2248806655406952,
+      "max": 2.1580159664154053,
+      "corrupted_files": [],
+      "nan_files": [],
+      "inf_files": []
+    }
+  }
+}

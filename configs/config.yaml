@@ -1,0 +1,33 @@
+# PRISM-Net configuration.
+# Every field here can be overridden by the corresponding CLI flag in
+# train.py / evaluate.py — this file only supplies defaults.
+
+data:
+  data_root: null          # e.g. "C:/Users/Poojitha Reddy/Downloads/train/train" (set via --data_root)
+  test_dir: null            # e.g. "C:/Users/Poojitha Reddy/Downloads/Test_NoisyLR"
+  val_fraction: 0.1
+  split_seed: 42
+  noisy_size: 128
+  gt_size: 256
+  scale_factor: 2
+
+augmentation:
+  geometric:
+    noisy_crop_size: 96
+    hflip_p: 0.5
+    vflip_p: 0.5
+    rotate_p: 0.5
+  curriculum:
+    warmup_frac: 0.15
+    max_speckle_severity: 0.35
+    max_gaussian_severity: 0.35
+    max_blur_severity: 0.5
+    max_apply_prob: 0.7
+    min_apply_prob: 0.15
+  domain_balanced_sampling: false   # no domain labels exist in the actual dataset -- see src/augmentations.py
+  model:
+    width: 48
+    num_denoise_blocks: 8
+    num_refine_blocks: 4
+    cond_dim: 64
+    scale: 2

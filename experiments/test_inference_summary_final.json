@@ -1,0 +1,11 @@
+{
+  "num_input_files": 400,
+  "num_processed": 400,
+  "num_failed": 0,
+  "inference_time_sec": {
+    "mean_per_image": 0.056371039249388556,
+    "min": 0.0410896999965189,
+    "max": 0.3973215999867534,
+    "total": 22.548415699755424
+  }
+}

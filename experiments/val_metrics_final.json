@@ -1,0 +1,17 @@
+{
+  "num_input_files": 320,
+  "num_processed": 320,
+  "num_failed": 0,
+  "inference_time_sec": {
+    "mean_per_image": 0.04558650406224842,
+    "min": 0.040964900006656535,
+    "max": 0.9784133000066504,
+    "total": 14.587681299919495
+  },
+  "metrics": {
+    "psnr_mean": 28.176338003195696,
+    "ssim_mean": 0.7611130526904009,
+    "lpips_mean": 0.2872775057679974,
+    "num_scored": 320
+  }
+}
