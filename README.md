@@ -1,332 +1,816 @@
-# PRISM-Net -- Frozen 50-Epoch Snapshot
+PRISM-Net -- Frozen 50-Epoch Project Snapshot
 
-This repository is a FROZEN SNAPSHOT of the completed 50-epoch
-PRISM-Net training run. It is not the active experiment repository
-and will not be updated for future training runs (65/80/etc epochs).
+PRISM-Net is a degradation-aware image restoration and 2x super-resolution
+network for degraded 128x128 grayscale images. The model restores each input
+to a 256x256 output while explicitly adapting its restoration behavior to the
+estimated degradation characteristics of the input.
 
-## What this snapshot represents
+This repository is the frozen record of the completed 50-epoch PRISM-Net
+experiment and its reproducibility/evaluation artifacts.
 
-- Full 50-epoch training run (epochs 0-49), executed in two stages
-  (Stage 1: epochs 0-16, Stage 2: epochs 17-49; Stage 1 includes an
-  initial NaN divergence that was root-caused and fixed -- see
-  `RESULTS.md` for details)
-- Best checkpoint: epoch 36
-- Best validation PSNR: 28.176338003195696 dB
-- Validation SSIM: 0.7611130526904009
-- Validation LPIPS: 0.2872775057679974
-- Validation set: 320 images (seed=42, held out)
-- Official test set: 400/400 images restored successfully, no ground
-  truth available (PSNR/SSIM/LPIPS not applicable)
+Quick Overview
 
----
+Problem
 
-## Submission Artifacts
+The task is to restore degraded low-resolution grayscale images affected by
+noise and information loss while simultaneously producing a 2x higher
+resolution output.
 
-The files required for evaluation can be located directly at the
-following paths:
+Input
 
-| Required Artifact | Location |
-|---|---|
-| **Trained model weights** | `checkpoints/best_model.pth` |
-| **Standalone evaluation script** | `evaluate.py` |
-| **Training script** | `train.py` |
-| **Restored test outputs** | `outputs/test_restored_final/` |
-| **Python environment** | `requirements.txt` |
-| **Complete training history** | `checkpoints/training_history_final_50epochs.json` |
-| **Detailed experimental results** | `RESULTS.md` |
+NoisyLR image: 128 x 128 grayscale
 
-### Model Selection
+Output
 
-`checkpoints/best_model.pth` contains the model checkpoint selected
-using validation PSNR.
+Restored image: 256 x 256 grayscale
 
-- Best checkpoint epoch: **36**
-- Best validation PSNR: **28.176338 dB**
-- Validation SSIM: **0.761113**
-- Validation LPIPS: **0.287278**
+Core PRISM-Net ideas
 
-`checkpoints/last.pth` contains the checkpoint from the end of the
-50-epoch training run.
+Degradation-aware conditioning
 
----
+Dual-domain processing using raw intensity and a log-domain representation
 
-## Repository Structure
+FiLM-conditioned restoration blocks
 
-```text
-PRISM-Net-Snapshot/
-│
-├── checkpoints/
-│   ├── best_model.pth
-│   ├── last.pth
-│   └── training_history_final_50epochs.json
-│
-├── configs/
-│   └── config.yaml
-│
-├── experiments/
-│   ├── val_split/
-│   ├── val_metrics_final.json
-│   └── test_inference_summary_final.json
-│
-├── outputs/
-│   ├── test_restored_final/
-│   └── val_restored/
-│
-├── scripts/
-│   ├── materialize_val_split.py
-│   ├── visualize_results.py
-│   └── visualize_test_samples.py
-│
-├── src/
-│   ├── augmentations.py
-│   ├── blocks.py
-│   ├── dataset.py
-│   ├── degradation_head.py
-│   ├── denoising_trunk.py
-│   ├── losses.py
-│   ├── metrics.py
-│   ├── model.py
-│   ├── preprocessing.py
-│   ├── super_resolution.py
-│   └── utils.py
-│
-├── tests/
-│   └── smoke_test.py
-│
-├── evaluate.py
-├── train.py
-├── validate_dataset.py
-├── inspect_dataset.py
-├── README.md
-├── RESULTS.md
-├── requirements.txt
-└── LICENSE
-```
+NAF-style attention-free restoration blocks
 
----
+PixelShuffle-based 2x super-resolution
 
-## File & Folder Purpose
+Global bicubic residual connection
 
-| File / Folder | Purpose |
-|---|---|
-| `checkpoints/best_model.pth` | **Best PRISM-Net model checkpoint**, selected using validation PSNR. |
-| `checkpoints/last.pth` | Checkpoint from the end of the 50-epoch training run. |
-| `checkpoints/training_history_final_50epochs.json` | Complete training and validation history for epochs 0-49. |
-| `configs/config.yaml` | Project configuration settings. |
-| `experiments/val_split/` | Frozen held-out validation split used for evaluation. |
-| `experiments/val_metrics_final.json` | Final validation evaluation metrics. |
-| `experiments/test_inference_summary_final.json` | Summary of official test-set inference. |
-| `outputs/test_restored_final/` | **400 restored outputs produced for the official test set.** |
-| `outputs/val_restored/` | Restored outputs for the validation set. |
-| `src/model.py` | Main PRISM-Net architecture definition. |
-| `src/blocks.py` | Neural-network building blocks used by PRISM-Net. |
-| `src/denoising_trunk.py` | Denoising and restoration trunk implementation. |
-| `src/degradation_head.py` | Degradation estimation and conditioning component. |
-| `src/super_resolution.py` | Super-resolution and reconstruction component. |
-| `src/losses.py` | Composite restoration loss implementation. |
-| `src/dataset.py` | Training, validation and test dataset implementations. |
-| `src/preprocessing.py` | Image preprocessing and tensor conversion utilities. |
-| `src/augmentations.py` | Training augmentation and degradation pipeline. |
-| `src/metrics.py` | PSNR, SSIM and LPIPS metric implementations. |
-| `src/utils.py` | General dataset and project utility functions. |
-| `evaluate.py` | **Standalone inference/evaluation script used to generate restored outputs.** |
-| `train.py` | Main PRISM-Net training script. |
-| `validate_dataset.py` | Dataset validation and consistency checking. |
-| `inspect_dataset.py` | Dataset inspection and analysis. |
-| `scripts/materialize_val_split.py` | Creates the reproducible validation split. |
-| `scripts/visualize_results.py` | Visualization of restoration results. |
-| `scripts/visualize_test_samples.py` | Visualization of test samples/results. |
-| `tests/smoke_test.py` | Basic project smoke test. |
-| `RESULTS.md` | Detailed experimental results, architecture and methodology. |
-| `requirements.txt` | **Exact frozen Python environment used for the training run.** |
-| `LICENSE` | Project license. |
+Numerically safe handling of raw and log-domain inputs
 
----
+KLA Submission Package
 
-## Canonical Files in This Snapshot
+A self-contained inference package is included for KLA evaluation:
 
-- `checkpoints/best_model.pth` -- best trained model checkpoint
-  selected using validation PSNR
-- `checkpoints/last.pth` -- end-of-run checkpoint
-- `checkpoints/training_history_final_50epochs.json` -- complete
-  epoch 0-49 training history
-- `experiments/val_metrics_final.json` -- final validation metrics
-- `experiments/test_inference_summary_final.json` -- official test
-  inference summary
-- `experiments/val_split/` -- exact held-out validation split used
-- `outputs/val_restored/` -- restored validation images
-- `outputs/test_restored_final/` -- restored official test outputs
+KLA_Submission/
+|-- README.md
+|-- requirements.txt
+|-- run.py
+`-- models/
+    `-- best_model.pth
 
----
+The package contains everything required for standalone inference:
 
-## Reproducing Evaluation
+File
 
-The official raw dataset is intentionally not included in this
-repository.
+Purpose
 
-For the held-out validation split, the following workflow can be used
-when the original training dataset is available:
+KLA_Submission/run.py
 
-```powershell
-python scripts\materialize_val_split.py --data_root <TRAIN_ROOT> --output_dir experiments\val_split
+Standalone PRISM-Net inference runner
 
-python evaluate.py --input_dir experiments\val_split\NoisyLR --gt_dir experiments\val_split\GT --output_dir outputs\val_restored --weights checkpoints\best_model.pth --metrics_json experiments\val_metrics_final.json
-```
+KLA_Submission/requirements.txt
 
-### Standalone Inference
+Pinned inference dependencies
 
-`evaluate.py` can also be used independently for inference on a
-directory containing NoisyLR `.npy` files.
+KLA_Submission/README.md
 
-```powershell
-python evaluate.py --input_dir <INPUT_DIR> --output_dir <OUTPUT_DIR> --weights checkpoints\best_model.pth
-```
+Standalone KLA execution documentation
 
-The evaluation script:
+KLA_Submission/models/best_model.pth
 
-1. Loads the supplied checkpoint.
-2. Automatically reads the architecture parameters stored in the
-   checkpoint.
-3. Discovers valid `.npy` input files.
-4. Runs PRISM-Net inference on all valid inputs.
-5. Produces 256 x 256 float32 restored outputs.
-6. Preserves the input filename stems.
-7. Writes outputs to the specified output directory.
-8. Reports processed files and inference timing.
-9. Optionally computes PSNR, SSIM and LPIPS when a matching
-   `--gt_dir` is supplied.
-10. Returns a non-zero exit status if individual inference failures
-    occur.
+Trained inference checkpoint
 
-Optional metric evaluation:
+KLA Quick Start
 
-```powershell
-python evaluate.py --input_dir <INPUT_DIR> --gt_dir <GT_DIR> --output_dir <OUTPUT_DIR> --weights checkpoints\best_model.pth --metrics_json <METRICS_JSON>
-```
+From the KLA_Submission directory:
 
-See `evaluate.py --help` for all available command-line options.
+python run.py <input-dir> <output-dir>
 
----
+Example:
 
-## Training
+python run.py input output
 
-The main training implementation is provided in:
+The runner:
 
-```text
-train.py
-```
+Loads the included trained checkpoint.
 
-The model architecture and supporting components are located under:
+Detects CUDA automatically when available.
 
-```text
-src/
-```
+Reads valid .npy grayscale inputs.
 
-The frozen snapshot represents the completed 50-epoch training run.
-This repository is not intended to continue the later experimental
-65/80+ epoch runs.
+Runs PRISM-Net inference.
 
----
+Produces 256x256 float32 restored outputs.
 
-## Validation Results
+Preserves the input filename for the corresponding output.
 
-The frozen model achieved:
+Creates the output directory automatically when required.
 
-| Metric | Result |
-|---|---:|
-| Best Validation PSNR | **28.176338 dB** |
-| Validation SSIM | **0.761113** |
-| Validation LPIPS | **0.287278** |
-| Best Checkpoint Epoch | **36** |
-| Validation Set Size | **320 images** |
+The KLA package does not require an API key, external service, or model
+weight download during inference.
 
-The validation split uses:
+KLA Verification
 
-- Validation fraction: **10%**
-- Split seed: **42**
+The standalone package was tested on the 320-image held-out validation
+input set.
 
-The complete epoch-by-epoch history is available in:
+Verification result:
 
-```text
-checkpoints/training_history_final_50epochs.json
-```
+320/320 images processed successfully
 
----
+0 failed images
 
-## Official Test Inference
+320 output files generated
 
-The official test set contains **400 images** and does not provide
-ground-truth images for evaluation.
+Output shape: 256x256
 
-The frozen PRISM-Net model successfully produced restored outputs
-for:
+Output dtype: float32
 
-**400 / 400 test images**
+All outputs finite
+
+Global output range: [0, 1]
+
+CUDA inference successfully verified
+
+Total inference time for the 320-image validation run: 15.676 seconds
+on the tested NVIDIA GeForce RTX 3050 6GB Laptop GPU
+
+The standalone package also successfully processed individual test inputs
+with the same output contract.
+
+See KLA_Submission/README.md for the complete standalone instructions.
+
+Frozen Experiment Results
+
+This snapshot represents the completed 50-epoch training run, covering
+epochs 0-49.
+
+The run was executed in two stages:
+
+Stage 1: epochs 0-16
+
+Stage 2: epochs 17-49
+
+Stage 1 included an initial NaN divergence that was root-caused and fixed.
+The documented experimental history is available in RESULTS.md.
+
+Best Validation Checkpoint
+
+The best checkpoint was selected using validation PSNR.
+
+Metric
+
+Result
+
+Best checkpoint epoch
+
+36
+
+Best validation PSNR
+
+28.176338003195696 dB
+
+Validation SSIM
+
+0.7611130526904009
+
+Validation LPIPS
+
+0.2872775057679974
+
+Validation set size
+
+320 images
+
+Validation split seed
+
+42
+
+The primary checkpoint is:
+
+checkpoints/best_model.pth
+
+The final end-of-run checkpoint is:
+
+checkpoints/last.pth
+
+Official Test Inference
+
+The official test set contains 400 images and does not provide ground-truth
+images.
+
+The frozen PRISM-Net model successfully generated restored outputs for:
+
+400 / 400 images
 
 The restored outputs are stored in:
 
-```text
 outputs/test_restored_final/
-```
 
-The corresponding inference summary is stored in:
+The corresponding inference summary is:
 
-```text
 experiments/test_inference_summary_final.json
-```
 
-Because ground truth is unavailable for the official test set,
-PSNR, SSIM and LPIPS are not reported for those images.
+Because ground truth is unavailable for the official test set, PSNR, SSIM
+and LPIPS are not applicable to those outputs.
 
----
+Model Architecture
 
-## Environment
+PRISM-Net is organized as an end-to-end restoration pipeline:
 
-`requirements.txt` contains the exact `pip freeze` environment used
-for the training run.
+Input: 128x128 raw NoisyLR
+          |
+          v
+Degradation Estimation Head
+          |
+          |----> noise-level descriptor
+          |----> degradation-severity descriptor
+          |
+          v
+Conditioning Vector
+          |
+          v
+Dual-Domain Denoising Trunk
+    |                 |
+    |                 +--> log(1 + x) domain
+    |
+    +--------------------> raw domain with soft-range stabilization
+          |
+          v
+FiLM-conditioned NAF-style restoration blocks
+          |
+          v
+Super-Resolution Head
+          |
+          v
+PixelShuffle 2x upsampling
+          |
+          v
+FiLM-conditioned refinement blocks
+          |
+          v
+Learned residual
+          |
+          +---- Bicubic 2x baseline
+                    |
+                    v
+             Final 256x256 output
+
+1. Degradation Estimation Head
+
+The degradation estimation head analyzes the raw degraded input and predicts
+two image-specific descriptors:
+
+Estimated noise level
+
+Estimated degradation severity
+
+These descriptors are embedded into a conditioning vector.
+
+The conditioning vector is then consumed by FiLM layers throughout the
+denoising trunk and super-resolution head.
+
+This allows the network to condition its restoration behavior on the
+estimated degradation characteristics of each input rather than applying
+one fixed restoration transform to every image.
+
+2. Dual-Domain Denoising Trunk
+
+The denoising trunk uses two complementary representations:
+
+Raw-domain representation
+Log-domain representation: log(1 + x)
+
+The raw-domain branch retains the original measured intensity information.
+
+A learnable soft-range clamp is used to stabilize overshoot values without
+using hard clipping.
+
+The log-domain branch provides a complementary representation for handling
+multiplicative speckle-like degradation.
+
+The raw and log representations are combined and processed by a stack of
+FiLM-conditioned NAF-style restoration blocks.
+
+3. NAF-Style Restoration Blocks
+
+The restoration blocks are attention-free and use:
+
+LayerNorm2d
+
+1x1 convolutions
+
+Depthwise 3x3 convolution
+
+SimpleGate
+
+Simplified channel attention
+
+Residual connections
+
+Learnable residual scaling
+
+FiLM conditioning
+
+The design focuses on efficient image restoration without conventional
+self-attention.
+
+4. Super-Resolution Head
+
+The super-resolution head receives the denoised feature representation and
+performs 2x spatial upsampling using PixelShuffle.
+
+The upsampled features are then processed by additional FiLM-conditioned
+NAF-style refinement blocks before producing the learned residual.
+
+5. Global Residual Connection
+
+PRISM-Net does not reconstruct the entire high-resolution image from
+scratch.
+
+Instead:
+
+Final Output = Bicubic Upsampling + Learned Residual
+
+The bicubic upsampled input provides a strong low-cost baseline, while the
+network learns the restoration and detail correction required beyond that
+baseline.
+
+Final Model Configuration
+
+The finalized inference checkpoint uses:
+
+Parameter
+
+Value
+
+Input channels
+
+1
+
+Input resolution
+
+128x128
+
+Output channels
+
+1
+
+Output resolution
+
+256x256
+
+Feature width
+
+48
+
+Denoising blocks
+
+8
+
+Refinement blocks
+
+4
+
+Conditioning dimension
+
+64
+
+Super-resolution scale
+
+2x
+
+Numerical Safety and Preprocessing
+
+The model is designed around the fact that degraded input values are not
+guaranteed to remain inside [0, 1].
+
+The observed NoisyLR range in the project materials was approximately:
+
+-0.04995 to 1.68157
+
+Therefore the preprocessing pipeline does not blindly clip the original
+input to [0, 1].
+
+For the log-domain representation, the transformation is:
+
+log(1 + x)
+
+A positive numerical floor is applied to the argument of the logarithm when
+necessary so that out-of-distribution inputs cannot cause an invalid
+logarithm.
+
+The raw-domain branch remains based on the original input, while the
+soft-range clamp is applied inside the denoising trunk for stabilization.
+
+Repository Structure
+
+PRISM-Net-Snapshot/
+|
+|-- checkpoints/
+|   |-- best_model.pth
+|   |-- last.pth
+|   `-- training_history_final_50epochs.json
+|
+|-- configs/
+|   `-- config.yaml
+|
+|-- experiments/
+|   |-- val_split/
+|   |-- val_metrics_final.json
+|   `-- test_inference_summary_final.json
+|
+|-- outputs/
+|   |-- test_restored_final/
+|   `-- val_restored/
+|
+|-- scripts/
+|   |-- materialize_val_split.py
+|   |-- visualize_results.py
+|   `-- visualize_test_samples.py
+|
+|-- src/
+|   |-- augmentations.py
+|   |-- blocks.py
+|   |-- dataset.py
+|   |-- degradation_head.py
+|   |-- denoising_trunk.py
+|   |-- losses.py
+|   |-- metrics.py
+|   |-- model.py
+|   |-- preprocessing.py
+|   |-- super_resolution.py
+|   `-- utils.py
+|
+|-- tests/
+|   `-- smoke_test.py
+|
+|-- KLA_Submission/
+|   |-- README.md
+|   |-- requirements.txt
+|   |-- run.py
+|   `-- models/
+|       `-- best_model.pth
+|
+|-- evaluate.py
+|-- train.py
+|-- validate_dataset.py
+|-- inspect_dataset.py
+|-- README.md
+|-- RESULTS.md
+|-- requirements.txt
+`-- LICENSE
+
+Important Files
+
+File / Folder
+
+Purpose
+
+checkpoints/best_model.pth
+
+Best PRISM-Net checkpoint selected using validation PSNR
+
+checkpoints/last.pth
+
+Checkpoint from the end of the 50-epoch run
+
+checkpoints/training_history_final_50epochs.json
+
+Complete training and validation history
+
+configs/config.yaml
+
+Project configuration
+
+experiments/val_split/
+
+Frozen held-out validation split
+
+experiments/val_metrics_final.json
+
+Final validation metrics
+
+experiments/test_inference_summary_final.json
+
+Official test inference summary
+
+outputs/val_restored/
+
+Restored validation outputs
+
+outputs/test_restored_final/
+
+Restored official test outputs
+
+src/model.py
+
+Main PRISM-Net architecture
+
+src/blocks.py
+
+Shared restoration blocks
+
+src/dataset.py
+
+Dataset implementations
+
+src/degradation_head.py
+
+Degradation estimation head
+
+src/denoising_trunk.py
+
+Dual-domain denoising trunk
+
+src/super_resolution.py
+
+Super-resolution head
+
+src/preprocessing.py
+
+Numerical-safe preprocessing utilities
+
+src/losses.py
+
+Restoration loss implementation
+
+src/metrics.py
+
+PSNR, SSIM and LPIPS implementations
+
+src/utils.py
+
+General project utilities
+
+evaluate.py
+
+Standalone inference/evaluation interface
+
+train.py
+
+Training implementation
+
+RESULTS.md
+
+Detailed architecture, methodology and experimental analysis
+
+requirements.txt
+
+Frozen training environment dependencies
+
+KLA_Submission/
+
+Self-contained KLA inference package
+
+Reproducing Evaluation
+
+The official raw dataset is intentionally not included in this repository.
+
+When the original dataset is available, the frozen validation split can be
+materialized using:
+
+python scripts\materialize_val_split.py --data_root <TRAIN_ROOT> --output_dir experiments\val_split
+
+Validation evaluation can then be run with:
+
+python evaluate.py --input_dir experiments\val_split\NoisyLR --gt_dir experiments\val_split\GT --output_dir outputs\val_restored --weights checkpoints\best_model.pth --metrics_json experiments\val_metrics_final.json
+
+Standalone Inference
+
+For inference without ground truth:
+
+python evaluate.py --input_dir <INPUT_DIR> --output_dir <OUTPUT_DIR> --weights checkpoints\best_model.pth
+
+The evaluation interface:
+
+Loads the supplied checkpoint.
+
+Reads the architecture parameters stored in the checkpoint when available.
+
+Discovers valid .npy input files.
+
+Runs PRISM-Net inference.
+
+Produces 256x256 float32 outputs.
+
+Preserves input filename stems.
+
+Writes outputs to the requested directory.
+
+Reports processed files and inference timing.
+
+Optionally computes PSNR, SSIM and LPIPS when --gt_dir is supplied.
+
+Returns a non-zero exit status if inference failures occur.
+
+For metric evaluation:
+
+python evaluate.py --input_dir <INPUT_DIR> --gt_dir <GT_DIR> --output_dir <OUTPUT_DIR> --weights checkpoints\best_model.pth --metrics_json <METRICS_JSON>
+
+Run:
+
+python evaluate.py --help
+
+for the complete command-line interface.
+
+Training
+
+The main training implementation is:
+
+train.py
+
+The architecture and supporting components are located under:
+
+src/
+
+This repository records the completed 50-epoch experiment as a frozen
+snapshot. It should be treated as a fixed record of the reported results.
+
+Validation Protocol
+
+The reported validation results were obtained using a held-out validation
+set of 320 images.
+
+The split uses:
+
+Validation fraction: 10%
+
+Split seed: 42
+
+The best checkpoint is selected using validation PSNR.
+
+Complete epoch-by-epoch history is stored in:
+
+checkpoints/training_history_final_50epochs.json
+
+Environment
 
 The primary training environment included:
 
-- PyTorch 2.11.0 + CUDA 13.0
-- torchvision 0.26.0 + CUDA 13.0
-- NumPy 2.5.2
-- scikit-image 0.26.0
-- LPIPS 0.1.4
-- PyTorch-MSSSIM 1.0.0
-- TensorBoard 2.21.0
+PyTorch 2.11.0 + CUDA 13.0
 
-All package versions are pinned in `requirements.txt`.
+torchvision 0.26.0 + CUDA 13.0
 
----
+NumPy 2.5.2
 
-## What Is Intentionally Excluded From This Snapshot
+scikit-image 0.26.0
 
-The following are intentionally excluded from the frozen repository:
+LPIPS 0.1.4
 
-- Intermediate/backup checkpoints
-  (epoch 14, epoch 16 and the failed NaN run)
-- Audit and consolidation scripts/reports
-- Presentation-generation scripts
-- PPTX and presentation assets
-- Raw TensorBoard event logs
-  (already consolidated into the canonical training history)
-- Raw dataset
+PyTorch-MSSSIM 1.0.0
 
-The snapshot is intended to provide the completed model, source
-implementation, evaluation interface, results, restored outputs and
-reproducibility information without including the raw dataset or
-temporary experiment artifacts.
+TensorBoard 2.21.0
 
----
+The exact frozen Python environment is recorded in:
 
-## Project Notes
+requirements.txt
 
-This repository represents the **frozen 50-epoch PRISM-Net submission
-artifact**.
+The KLA package has its own minimal inference dependency specification:
 
-It should be treated as a fixed record of the reported experiment.
-Later training experiments are maintained separately and do not modify
-the results represented here.
+KLA_Submission/requirements.txt
 
-See `RESULTS.md` for the detailed architecture, methodology,
-experimental history and result analysis.
+with the tested versions:
+
+numpy==2.5.2
+torch==2.11.0+cu130
+
+What Is Intentionally Excluded
+
+The following temporary or non-canonical artifacts are intentionally not
+part of the frozen project snapshot:
+
+Intermediate and backup checkpoints
+
+Failed NaN-run artifacts
+
+Audit and consolidation scripts/reports
+
+Presentation-generation scripts
+
+PPTX and presentation assets
+
+Raw TensorBoard event logs
+
+Raw dataset
+
+The repository focuses on the completed model, source implementation,
+evaluation interface, canonical checkpoints, reported results, restored
+outputs and reproducibility information.
+
+Limitations
+
+The official test set does not provide ground truth, so quantitative
+PSNR, SSIM and LPIPS evaluation cannot be performed for those 400 images.
+
+The repository does not include the raw dataset.
+
+The KLA package is intended for the specified grayscale 128x128 input
+format and produces 256x256 outputs.
+
+Performance outside the training/data distribution should be evaluated
+separately.
+
+Project Status
+
+This repository contains the completed frozen 50-epoch PRISM-Net experiment
+and the associated evaluation artifacts.
+
+The KLA-ready inference package has been independently verified on the
+320-image held-out validation input set with zero inference failures.
+
+The project also includes the final project presentation and supporting
+experiment artifacts in the repository history.
+
+For detailed experimental history, methodology, architecture decisions and
+result analysis, see:
+
+RESULTS.md
+
+For standalone KLA execution instructions, see:
+
+KLA_Submission/README.md
+
+KLA Submission Package -- Detailed Reference
+
+Package Contents
+
+KLA_Submission/
+|-- README.md
+|-- requirements.txt
+|-- run.py
+`-- models/
+    `-- best_model.pth
+
+Input Contract
+
+Each input file must be a NumPy .npy file containing a grayscale degraded
+image with a 128x128 spatial resolution.
+
+Supported array shapes:
+
+(128, 128)
+(1, 128, 128)
+
+Output Contract
+
+For each valid input, the runner creates an output file with the same
+filename stem.
+
+Output contract:
+
+shape: (256, 256)
+dtype: float32
+range: [0, 1]
+
+All verified outputs were finite and contained no NaN or Inf values.
+
+Tested Inference Result
+
+The complete held-out validation inference test produced:
+
+Input files:          320
+Processed:            320
+Failed:               0
+Output files:         320
+Output shape:         256 x 256
+Output dtype:         float32
+Global minimum:       0.0
+Global maximum:       1.0
+Validation status:    PASS
+Total inference time: 15.676 seconds
+
+The tested hardware was:
+
+NVIDIA GeForce RTX 3050 6GB Laptop GPU
+
+The package is therefore ready as a standalone inference submission in
+addition to the full project repository.
+
+Final Artifact Map
+
+For a reviewer or evaluator, the most important artifacts are:
+
+Full project:
+README.md
+
+Detailed technical documentation:
+RESULTS.md
+
+Best trained model:
+checkpoints/best_model.pth
+
+Standalone evaluation:
+evaluate.py
+
+KLA-ready standalone package:
+KLA_Submission/
+
+KLA model:
+KLA_Submission/models/best_model.pth
+
+KLA runner:
+KLA_Submission/run.py
+
+KLA instructions:
+KLA_Submission/README.md
+
+KLA dependencies:
+KLA_Submission/requirements.txt
+
+This README documents the frozen PRISM-Net project, its reported 50-epoch
+results, its evaluation interface, and its standalone KLA submission
+package.
